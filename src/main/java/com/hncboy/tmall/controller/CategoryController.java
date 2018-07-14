@@ -1,5 +1,7 @@
 package com.hncboy.tmall.controller;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.hncboy.tmall.pojo.Category;
 import com.hncboy.tmall.service.CategoryService;
 import com.hncboy.tmall.util.ImageUtil;
@@ -27,10 +29,12 @@ public class CategoryController {
 
     @RequestMapping("admin_category_list")
     public String list(Model model, Page page) {
+        //通过分页插件指定分页参数
+        PageHelper.offsetPage(page.getStart(), page.getCount());
         //获取当前页的分类集合
-        List<Category> cs = categoryService.list(page);
-        //获取分类总数
-        int total = categoryService.total();
+        List<Category> cs = categoryService.list();
+        //通过PageInfo获取总数
+        int total = (int) new PageInfo<>(cs).getTotal();
         //为分页对象设置总数
         page.setTotal(total);
         model.addAttribute("cs", cs);
