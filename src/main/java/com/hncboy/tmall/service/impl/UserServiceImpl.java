@@ -49,4 +49,12 @@ public class UserServiceImpl implements UserService {
         List<User> result = userMapper.selectByExample(example);
         return !result.isEmpty();
     }
+
+    @Override
+    public User get(String name, String password) {
+        UserExample example = new UserExample();
+        example.createCriteria().andNameEqualTo(name).andPasswordEqualTo(password);
+        List<User> result = userMapper.selectByExample(example);
+        return result.get(0);
+    }
 }
