@@ -4,11 +4,14 @@ import com.hncboy.tmall.mapper.ProductMapper;
 import com.hncboy.tmall.pojo.Category;
 import com.hncboy.tmall.pojo.Product;
 import com.hncboy.tmall.pojo.ProductExample;
+import com.hncboy.tmall.pojo.ProductImage;
 import com.hncboy.tmall.service.CategoryService;
+import com.hncboy.tmall.service.ProductImageService;
 import com.hncboy.tmall.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,6 +22,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    ProductImageService productImageService;
 
     @Override
     public void add(Product p) {
@@ -37,7 +43,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product get(int id) {
-        return productMapper.selectByPrimaryKey(id);
+        Product p = productMapper.selectByPrimaryKey(id);
+        setFirstProductImage(p);
+        setCategory(p);
+        return p;
     }
 
     @Override
@@ -46,8 +55,47 @@ public class ProductServiceImpl implements ProductService {
         example.createCriteria().andCidEqualTo(cid);
         example.setOrderByClause("id desc");
         List result = productMapper.selectByExample(example);
+        setFirstProductImage(result);
         setCategory(result);
         return result;
+    }
+
+    @Override
+    public void setFirstProductImage(Product p) {
+        List<ProductImage> pis = productImageService.list(p.getId(), ProductImageService.type_single);
+        if (!pis.isEmpty()) {
+            ProductImage pi = pis.get(0);
+            p.setFirstProductImage(pi);
+        }
+    }
+
+    @Override
+    public void fill(List<Category> cs) {
+        for (Category c : cs) {
+            fill(c);
+        }
+    }
+
+    @Override
+    public void fill(Category c) {
+        List<Product> ps = list(c.getId());
+        c.setProducts(ps);
+    }
+
+    @Override
+    public void fillByRow(List<Category> cs) {
+        int productNumberEachRow = 8;
+        for (Category c : cs) {
+            List<Product> products = c.getProducts();
+            List<List<Product>> productsByRow = new ArrayList<>();
+            for (int i = 0; i < products.size(); i += productNumberEachRow) {
+                int size = i + productNumberEachRow;
+                size = size > products.size() ? products.size() : size;
+                List<Product> productsOfEachRow = products.subList(i, size);
+                productsByRow.add(productsOfEachRow);
+            }
+            c.setProductsByRow(productsByRow);
+        }
     }
 
     public void setCategory(List<Product> ps) {
@@ -60,5 +108,11 @@ public class ProductServiceImpl implements ProductService {
         int cid = p.getCid();
         Category c = categoryService.get(cid);
         p.setCategory(c);
+    }
+
+    public void setFirstProductImage(List<Product> ps) {
+        for (Product p : ps) {
+            setFirstProductImage(p);
+        }
     }
 }
