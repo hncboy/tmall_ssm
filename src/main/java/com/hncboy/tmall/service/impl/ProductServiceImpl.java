@@ -5,9 +5,7 @@ import com.hncboy.tmall.pojo.Category;
 import com.hncboy.tmall.pojo.Product;
 import com.hncboy.tmall.pojo.ProductExample;
 import com.hncboy.tmall.pojo.ProductImage;
-import com.hncboy.tmall.service.CategoryService;
-import com.hncboy.tmall.service.ProductImageService;
-import com.hncboy.tmall.service.ProductService;
+import com.hncboy.tmall.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +22,13 @@ public class ProductServiceImpl implements ProductService {
     private CategoryService categoryService;
 
     @Autowired
-    ProductImageService productImageService;
+    private ProductImageService productImageService;
+
+    @Autowired
+    private OrderItemService orderItemService;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @Override
     public void add(Product p) {
@@ -98,6 +102,22 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Override
+    public void setSaleAndReviewNumber(Product p) {
+        int saleCount = orderItemService.getSaleCount(p.getId());
+        p.setSaleCount(saleCount);
+
+        int reviewCount = reviewService.getCount(p.getId());
+        p.setReviewCount(reviewCount);
+    }
+
+    @Override
+    public void setSaleAndReviewNumber(List<Product> ps) {
+        for (Product p : ps) {
+            setSaleAndReviewNumber(p);
+        }
+    }
+
     public void setCategory(List<Product> ps) {
         for (Product p : ps) {
             setCategory(p);
@@ -110,7 +130,7 @@ public class ProductServiceImpl implements ProductService {
         p.setCategory(c);
     }
 
-    public void setFirstProductImage(List<Product> ps) {
+    private void setFirstProductImage(List<Product> ps) {
         for (Product p : ps) {
             setFirstProductImage(p);
         }
