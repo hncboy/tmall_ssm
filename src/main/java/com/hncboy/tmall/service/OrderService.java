@@ -1,6 +1,7 @@
 package com.hncboy.tmall.service;
 
 import com.hncboy.tmall.pojo.Order;
+import com.hncboy.tmall.pojo.OrderItem;
 
 import java.util.List;
 
@@ -14,6 +15,8 @@ public interface OrderService {
     String delete = "delete";
 
     void add(Order c);
+
+    float add(Order c, List<OrderItem> ois);
 
     void delete(int id);
 
